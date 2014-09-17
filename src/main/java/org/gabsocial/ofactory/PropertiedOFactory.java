@@ -19,6 +19,8 @@
 
 package org.gabsocial.ofactory;
 
+import org.gabsocial.ofactory.OFactory.Event;
+
 /**
  * <pre>
  * This class is a factory creating and handling of child objects that have settings.
@@ -139,6 +141,7 @@ public class PropertiedOFactory extends OFactory
         // other methods do parameter validation.
         final C child = this.loadAndStoreOFactoryChild(key, className);
         child.initialize(this, key, settings);
+        this.notifyObservers(new Event(Event.Type.CREATE, key, child));
         return child;
     }
     

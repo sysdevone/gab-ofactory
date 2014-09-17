@@ -188,17 +188,21 @@ public abstract class BaseOFactoryChildImpl implements OFactoryChild
         this._isClosed = false;
     }
     
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        return String.format(
-                "BaseOFactoryChildImpl [_isClosed=%s, _key=%s, _parent=%s]",
-                this._isClosed, this._key, this._parent);
+        StringBuilder builder = new StringBuilder();
+        builder.append("BaseOFactoryChildImpl [_isClosed=");
+        builder.append(this._isClosed);
+        builder.append(", _key=");
+        builder.append(this._key);
+        builder.append(", _parent=");
+        builder.append(this._parent.getClass());
+        builder.append("]");
+        return builder.toString();
     }
     
 }

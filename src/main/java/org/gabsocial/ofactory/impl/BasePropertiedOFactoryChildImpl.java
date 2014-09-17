@@ -62,17 +62,19 @@ public abstract class BasePropertiedOFactoryChildImpl extends
         return (S) (this._settings);
     }
     
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        return String
-                .format("BasePropertiedOFactoryChildImpl [_settings=%s, toString()=%s, getClass()=%s]",
-                        this._settings, super.toString(), this.getClass());
+        StringBuilder builder = new StringBuilder();
+        builder.append("BasePropertiedOFactoryChildImpl [toString()=");
+        builder.append(super.toString());
+        builder.append(", _settings=");
+        builder.append(this._settings);
+        builder.append("]");
+        return builder.toString();
     }
     
 }

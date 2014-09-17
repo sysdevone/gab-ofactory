@@ -21,6 +21,8 @@ package org.gabsocial.ofactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import org.gabsocial.common.validator.Validate;
@@ -28,35 +30,121 @@ import org.gabsocial.common.validator.Validate;
 
 /**
  * <pre>
- * This class is a factory creating and handling of child objects.
+ * This class is an observable factory for creating and handling of child objects.
  * 
  * Before an child can be created and used, the factory needs to be
  * instantiated.   It is up to the caller to determine if the factory is a 
  * singleton for implementation purposes.
  * 
- * After the factory is created and in memory, call the create(xxx) method to
- * create and add children.
+ * After the factory is created and in memory,  add an observer to the OFactory using 
+ * the addObserver(Observer) or remove using removeObserver(Observer).
+ * 
+ * Call the create(xxx) method to create and add children and notify observers with a 
+ * CREATE type event.
  * 
  * Once a child is created, a call to the factory's getChild(key) method will
- * return the child instance associated with the key. Only once child can be
- * associated with a specific key.
+ * return the child instance associated with the key. Only one child can be
+ * associated with a specific key.  Calling the getChild(key) will notify observers 
+ * with a GET type event.
  * 
  * A child will be maintained by the factory until that child is removed by
- * calling the factory's removeChild(key) method or the child's close() method.
+ * calling the factory's removeChild(key) method or the child's close() method.  
+ * Calling the removeChild(key) or the child's close() will notify observers with a 
+ * REMOVE type event that the child was removed from the OFactory.
  * 
- * The factory's close() method will remove all children and prevent calls to
- * other factory methods. Call getInstance() to create a new instance of
- * OFactory so that child objects can be created and added.
+ * The factory's close() method will remove all children and all observers and prevent calls to
+ * other factory methods. Calling the close() method will notify all observers with a CLOSE type 
+ * event before the OFactory removes the observers.
+ * 
  * </pre>
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactory
+public class OFactory extends Observable
 {
     
     // P = parent
     // C = child
     // S = settings
+    
+    /**
+     * OFactory Event that is sent to Observers when an child is created,
+     * removed, get or when the OFactory is closed.
+     * 
+     * 
+     * @author Gregory Brown (sysdevone)
+     * 
+     */
+    public static class Event
+    {
+        public static enum Type
+        {
+            CLOSE, CREATE, GET, REMOVE;
+        }
+        
+        private OFactoryChild    _child;
+        private final Event.Type _eventType;
+        private String           _key;
+        
+        /**
+         * Constructor used when the key and child will be null.
+         * 
+         * @param eventType
+         *            An enum <code>Type</code> that defined the type of event.
+         */
+        public Event(final Event.Type eventType)
+        {
+            this._eventType = eventType;
+        }
+        
+        /**
+         * Constructor used when the key and child will be null.
+         * 
+         * @param eventType
+         *            An enum <code>Type</code> that defined the type of event.
+         */
+        public Event(final Event.Type eventType, final String key,
+                final OFactoryChild child)
+        {
+            this(eventType);
+            this._key = key;
+            this._child = child;
+        }
+        
+        public OFactoryChild getChild()
+        {
+            return (this._child);
+        }
+        
+        public String getKey()
+        {
+            return (this._key);
+        }
+        
+        public Event.Type getType()
+        {
+            return (this._eventType);
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Event [_eventType=");
+            builder.append(this._eventType);
+            builder.append(", _key=");
+            builder.append(this._key);
+            builder.append(", _child=");
+            builder.append(this._child);
+            builder.append("]");
+            return builder.toString();
+        }
+        
+        
+    }
     
     /**
      * Loads an OFactoryChild using the classname to get a new instances.
@@ -100,12 +188,12 @@ public class OFactory
     /**
      * A table of children.
      */
-    private Map<String, OFactoryChild> _children;
+    private final Map<String, OFactoryChild> _children;
     
     /**
      * A flag to determine if the factory has been closed.
      */
-    private boolean                    _isClosed;
+    private boolean                          _isClosed;
     
     /*
      * initializes the children table.
@@ -114,6 +202,26 @@ public class OFactory
     {
         this._children = new HashMap<String, OFactoryChild>();
         this._isClosed = false;
+    }
+    
+    /**
+     * Add an observer to the OFactory. The observer will be notified of events.
+     * 
+     * @param observer
+     *            An <code>Observer</code> instance that wants to be notified of
+     *            events.
+     */
+    public synchronized void addObserver(final Observer observer)
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            super.addObserver(observer);
+        }
     }
     
     /**
@@ -164,10 +272,13 @@ public class OFactory
             {
                 this.closeChild(key);
             }
-            
-            this._isClosed = true;
             assert (this._children.size() == 0) : "The child table should be empty.";
             
+            this._isClosed = true;
+            
+            this.notifyObservers(new Event(Event.Type.CLOSE));
+            this.deleteObservers();
+            assert (this.countObservers() == 0) : "The observable table should be empty.";
         }
     }
     
@@ -202,7 +313,32 @@ public class OFactory
                 child.closeWithoutRemove();
                 assert (!this._children.containsKey(child.getKey())) : "The children table still contains the factory child when the factory child was closed.";
             }
+            this.notifyObservers(new Event(Event.Type.REMOVE, key, child));
             return (child);
+        }
+    }
+    
+    /**
+     * Returns a <code>boolean</code> value (true or false) if a key is
+     * associated with a <code>OFactoryChild</code>.
+     * 
+     * @param key
+     *            A <code>String</code> instance that is a key.
+     * @return A <code>boolean</code> value (true or false).
+     * 
+     * @throws OFactoryClosedException
+     *             if this method is called and the OFactory is closed.
+     */
+    public boolean containsChild(final String key)
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            return (this._children.containsKey(key));
         }
     }
     
@@ -290,9 +426,117 @@ public class OFactory
             final String className) throws OFactoryChildException
     {
         // other methods do parameter validation.
-        C child = this.loadAndStoreOFactoryChild(key, className);
+        final C child = this.loadAndStoreOFactoryChild(key, className);
         child.initialize(this, key);
+        this.notifyObservers(new Event(Event.Type.CREATE, key, child));
         return child;
+    }
+    
+    /**
+     * Gets the child by the bounded key.
+     * 
+     * @param key
+     *            The key that is bound to the logger.
+     * 
+     * @return An <code>OFactoryChild</code> child instance associated with the
+     *         key. May return null.
+     * 
+     * @throws OFactoryClosedException
+     *             if this method is called and the OFactory is closed.
+     */
+    public <C extends OFactoryChild> C get(final String key)
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            Validate.isNullOrEmpty(key,
+                    "get() - the parameter 'key' should not be null or empty",
+                    this.getClass());
+            
+            final C child = (C) this._children.get(key);
+            this.notifyObservers(new Event(Event.Type.GET, key, child));
+            return (child);
+            
+        }
+    }
+    
+    /**
+     * Returns the number of children created and managed by this Factory.
+     * 
+     * @return An integer value (0 <= x <= n) that is the number of children.
+     * 
+     * @throws OFactoryClosedException
+     *             if this method is called and the OFactory is closed.
+     */
+    public int getChildCount()
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            return (this._children.size());
+        }
+    }
+    
+    /**
+     * Returns a <code>Set</code> containing <code>String</code> keys.
+     * 
+     * @return A <code>Set</code> containing <code>String</code> keys.
+     * 
+     * @throws OFactoryClosedException
+     *             if this method is called and the OFactory is closed.
+     */
+    public Set<String> getKeys()
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            final Set<String> keys = this._children.keySet();
+            return (keys);
+            
+        }
+    }
+    
+    /**
+     * Get the current number of observers wanting to be notified of events.
+     * 
+     * @return An <code>int</code> value 0 <= x <= n.
+     */
+    public int getObserverCount()
+    {
+        if (this.isClosed())
+        {
+            throw (new OFactoryClosedException(
+                    "This factory is closed and unable to process calls."));
+        }
+        else
+        {
+            final int count = this.countObservers();
+            return (count);
+        }
+    }
+    
+    /**
+     * Returns a boolean (true or false) if this <code>OFactory</code> is
+     * closed.
+     * 
+     * @return A <code>boolean</code> value. True if the factory is closed,
+     *         otherwise it is false.
+     */
+    public boolean isClosed()
+    {
+        return (this._isClosed);
     }
     
     /**
@@ -349,18 +593,31 @@ public class OFactory
     }
     
     /**
-     * Gets the child by the bounded key.
+     * Notifies the <code>Observers</code> of an event within the OFactory.
      * 
-     * @param key
-     *            The key that is bound to the logger.
-     * 
-     * @return An <code>OFactoryChild</code> child instance associated with the
-     *         key. May return null.
-     * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @param event
+     *            An <code>OFactory</code> event that indicates a CREATE,
+     *            REMOVE, GET, CLOSE;
      */
-    public <C extends OFactoryChild> C get(final String key)
+    protected void notifyObservers(final Event event)
+    {
+        this.setChanged();
+        if (this.countObservers() > 0)
+        {
+            super.notifyObservers(event);
+        }
+        this.clearChanged();
+    }
+    
+    /**
+     * Remove an observer from the OFactory. The observer will no longer be
+     * notified of events.
+     * 
+     * @param observer
+     *            An <code>Observer</code> instance that wants to be removed
+     *            from being notified of events.
+     */
+    public void removeObserver(final Observer observer)
     {
         if (this.isClosed())
         {
@@ -369,106 +626,23 @@ public class OFactory
         }
         else
         {
-            Validate.isNullOrEmpty(key,
-                    "get() - the parameter 'key' should not be null or empty",
-                    this.getClass());
-            
-            final C child = (C) this._children.get(key);
-            return (child);
-            
+            this.deleteObserver(observer);
         }
     }
     
-    /**
-     * Returns the number of children created and managed by this Factory.
-     * 
-     * @return An integer value (0 <= x <= n) that is the number of children.
-     * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     */
-    public int getChildCount()
-    {
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            return (this._children.size());
-        }
-    }
-    
-    /**
-     * Returns a <code>boolean</code> value (true or false) if a key is
-     * associated with a <code>OFactoryChild</code>.
-     * 
-     * @param key
-     *            A <code>String</code> instance that is a key.
-     * @return A <code>boolean</code> value (true or false).
-     * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     */
-    public boolean containsChild(String key)
-    {
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            return (this._children.containsKey(key));
-        }
-    }
-    
-    /**
-     * Returns a <code>Set</code> containing <code>String</code> keys.
-     * 
-     * @return A <code>Set</code> containing <code>String</code> keys.
-     * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     */
-    public Set<String> getKeys()
-    {
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            final Set<String> keys = this._children.keySet();
-            return (keys);
-            
-        }
-    }
-    
-    /**
-     * Returns a boolean (true or false) if this <code>OFactory</code> is
-     * closed.
-     * 
-     * @return A <code>boolean</code> value. True if the factory is closed,
-     *         otherwise it is false.
-     */
-    public boolean isClosed()
-    {
-        return (this._isClosed);
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
+    /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        return String.format("OFactory [children.size=%s, isClosed=%s]",
-                this._children.size(), this._isClosed);
+        StringBuilder builder = new StringBuilder();
+        builder.append("OFactory [_children=");
+        builder.append(this._children);
+        builder.append(", _isClosed=");
+        builder.append(this._isClosed);
+        builder.append("]");
+        return builder.toString();
     }
     
 }
