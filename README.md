@@ -27,4 +27,4 @@ We accept tips through [Gratipay][tip].
 
 [license]:https://github.com/sysdevone/ofactory/tree/master/LICENSE
 [wiki]:https://github.com/sysdevone/ofactory/wiki
-[tip]:https://www.gittip.com/sysdevone/
+[tip]:https://www.gratipay.com/sysdevone/
