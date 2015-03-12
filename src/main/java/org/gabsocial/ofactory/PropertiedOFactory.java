@@ -19,7 +19,7 @@
 
 package org.gabsocial.ofactory;
 
-import org.gabsocial.ofactory.OFactory.Event;
+
 
 /**
  * <pre>
@@ -46,7 +46,8 @@ import org.gabsocial.ofactory.OFactory.Event;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class PropertiedOFactory extends OFactory
+public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
+        OFactory<C>
 {
     // P = parent
     // C = child
@@ -64,11 +65,10 @@ public class PropertiedOFactory extends OFactory
      * 
      * @return A <code>OFactoryChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildExistsException
+     * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends PropertiedOFactoryChild, S> C create(
-            final Class<C> clazz, final S settings)
+    public C create(final Class<C> clazz, final S settings)
             throws OFactoryChildException
     {
         return (this.create(clazz.getName(), clazz.getName(), settings));
@@ -79,7 +79,7 @@ public class PropertiedOFactory extends OFactory
      * 
      * @param key
      *            The key associated with the new child.
-     * @param Class
+     * @param clazz
      *            The class type to create a child from.
      * @param settings
      *            An object that holds data used to initialize the child after
@@ -87,11 +87,10 @@ public class PropertiedOFactory extends OFactory
      * 
      * @return A <code>OFactoryChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildExistsException
+     * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends PropertiedOFactoryChild, S> C create(final String key,
-            final Class<C> clazz, final S settings)
+    public C create(final String key, final Class<C> clazz, final S settings)
             throws OFactoryChildException
     {
         return (this.create(key, clazz.getName(), settings));
@@ -110,8 +109,7 @@ public class PropertiedOFactory extends OFactory
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends PropertiedOFactoryChild, S> C create(
-            final String className, final S settings)
+    public C create(final String className, final S settings)
             throws OFactoryChildException
     {
         return (this.create(className, className, settings));
@@ -134,8 +132,7 @@ public class PropertiedOFactory extends OFactory
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends PropertiedOFactoryChild, S> C create(final String key,
-            final String className, final S settings)
+    public C create(final String key, final String className, final S settings)
             throws OFactoryChildException
     {
         // other methods do parameter validation.

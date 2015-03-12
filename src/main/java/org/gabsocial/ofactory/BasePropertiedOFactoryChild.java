@@ -17,7 +17,7 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory.impl;
+package org.gabsocial.ofactory;
 
 import org.gabsocial.ofactory.PropertiedOFactory;
 import org.gabsocial.ofactory.PropertiedOFactoryChild;
@@ -30,8 +30,8 @@ import org.gabsocial.ofactory.PropertiedOFactoryChild;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract class BasePropertiedOFactoryChildImpl extends
-        BaseOFactoryChildImpl implements PropertiedOFactoryChild
+public abstract class BasePropertiedOFactoryChild extends
+        BaseOFactoryChild implements PropertiedOFactoryChild
 {
     /*
      * The settings used to initialize this class.

@@ -34,12 +34,12 @@ import org.junit.Test;
 public class OFactoryTest
 {
     
-    OFactory _ofactory;
+    OFactory<MockOFactoryChildImpl> _ofactory;
     
     @Before
     public void setup()
     {
-        this._ofactory = new OFactory();
+        this._ofactory = new OFactory<MockOFactoryChildImpl>();
     }
     
     @Test

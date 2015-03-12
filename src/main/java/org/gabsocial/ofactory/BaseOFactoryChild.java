@@ -17,7 +17,7 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory.impl;
+package org.gabsocial.ofactory;
 
 import org.gabsocial.ofactory.OFactory;
 import org.gabsocial.ofactory.OFactoryChild;
@@ -31,7 +31,7 @@ import org.gabsocial.ofactory.OFactoryClosedException;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract class BaseOFactoryChildImpl implements OFactoryChild
+public abstract class BaseOFactoryChild implements OFactoryChild
 {
     // P = parent
     // C = child
@@ -41,17 +41,17 @@ public abstract class BaseOFactoryChildImpl implements OFactoryChild
      * A flag to determine if the child is closed. If closed, then the child
      * should throw exception a method is called.
      */
-    private boolean  _isClosed = false;
+    private boolean     _isClosed = false;
     
     /**
      * The key bound to this child.
      */
-    private String   _key;
+    private String      _key;
     
     /**
      * The parent factory.
      */
-    private OFactory _parent;
+    private OFactory<?> _parent;
     
     /*
      * (non-Javadoc)
@@ -111,7 +111,7 @@ public abstract class BaseOFactoryChildImpl implements OFactoryChild
         if (this == obj) { return true; }
         if (obj == null) { return false; }
         if (this.getClass() != obj.getClass()) { return false; }
-        final BaseOFactoryChildImpl other = (BaseOFactoryChildImpl) obj;
+        final BaseOFactoryChild other = (BaseOFactoryChild) obj;
         if (this._key == null)
         {
             if (other._key != null) { return false; }
@@ -188,7 +188,9 @@ public abstract class BaseOFactoryChildImpl implements OFactoryChild
         this._isClosed = false;
     }
     
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override

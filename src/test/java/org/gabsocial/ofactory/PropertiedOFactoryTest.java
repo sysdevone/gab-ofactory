@@ -36,12 +36,12 @@ import org.junit.Test;
 public class PropertiedOFactoryTest
 {
     
-    PropertiedOFactory _propertiedOFactory;
+    PropertiedOFactory<MockPropertiedOFactoryChildImpl, Properties> _propertiedOFactory;
     
     @Before
     public void setup()
     {
-        this._propertiedOFactory = new PropertiedOFactory();
+        this._propertiedOFactory = new PropertiedOFactory<MockPropertiedOFactoryChildImpl, Properties>();
     }
     
     @Test
@@ -74,7 +74,7 @@ public class PropertiedOFactoryTest
         
         try
         {
-            final OFactoryChild child = this._propertiedOFactory
+            final PropertiedOFactoryChild child = this._propertiedOFactory
                     .create(className);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
@@ -95,7 +95,7 @@ public class PropertiedOFactoryTest
         
         try
         {
-            final OFactoryChild child = this._propertiedOFactory.create(key,
+            final PropertiedOFactoryChild child = (PropertiedOFactoryChild) this._propertiedOFactory.create(key,
                     MockPropertiedOFactoryChildImpl.class);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
@@ -117,7 +117,7 @@ public class PropertiedOFactoryTest
         
         try
         {
-            final OFactoryChild child = this._propertiedOFactory.create(key,
+            final PropertiedOFactoryChild child = this._propertiedOFactory.create(key,
                     className);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);

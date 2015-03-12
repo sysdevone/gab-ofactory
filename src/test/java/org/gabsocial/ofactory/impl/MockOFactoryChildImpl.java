@@ -19,13 +19,15 @@
 
 package org.gabsocial.ofactory.impl;
 
+import org.gabsocial.ofactory.BaseOFactoryChild;
+
 /**
  * 
  * A Mock object for testing the OFactory.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class MockOFactoryChildImpl extends BaseOFactoryChildImpl
+public class MockOFactoryChildImpl extends BaseOFactoryChild
 {
     // void for now.
 }

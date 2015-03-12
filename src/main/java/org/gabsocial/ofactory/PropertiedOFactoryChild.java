@@ -26,7 +26,8 @@ package org.gabsocial.ofactory;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract interface PropertiedOFactoryChild extends OFactoryChild
+public abstract interface PropertiedOFactoryChild
+        extends OFactoryChild
 {
     // P = parent
     // C = child
@@ -47,8 +48,8 @@ public abstract interface PropertiedOFactoryChild extends OFactoryChild
      * @param settings
      *            An object that holds setting information. Must not be null.
      */
-    public abstract <P extends PropertiedOFactory, S> void initialize(
-            final P parent, final String key, final S settings);
+    public abstract <P extends PropertiedOFactory, S> void initialize(final P parent, final String key,
+            final S settings);
     
     /**
      * Returns the settings used when the child was initialized.

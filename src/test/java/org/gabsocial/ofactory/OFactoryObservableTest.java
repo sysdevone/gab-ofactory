@@ -38,20 +38,20 @@ import org.junit.Test;
 public class OFactoryObservableTest
 {
     
-    static OFactory _ofactory;
-    static boolean  _observerCalled;
+    static OFactory<MockOFactoryChildImpl> s_ofactory;
+    static boolean  s_observerCalled;
     
     @Before
     public void setup()
     {
-        this._ofactory = new OFactory();
-        this._observerCalled = false;
+        s_ofactory = new OFactory<MockOFactoryChildImpl>();
+        s_observerCalled = false;
     }
     
     @Test
     public void testCreateChildWithClassKey()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         final String className = "org.gabsocial.ofactory.impl.MockOFactoryChildImpl";
         
         Observer ofactoryObserver = new Observer()
@@ -61,26 +61,26 @@ public class OFactoryObservableTest
             public void update(Observable o, Object arg)
             {
                 // System.out.println("Observable: " + o + " Event: " + arg);
-                OFactoryObservableTest._observerCalled = true;
-                OFactory ofactory = (OFactory) o;
+                OFactoryObservableTest.s_observerCalled = true;
+                OFactory<?> ofactory = (OFactory<?>) o;
                 Assert.assertTrue(ofactory
-                        .equals(OFactoryObservableTest._ofactory));
+                        .equals(OFactoryObservableTest.s_ofactory));
                 Event event = (Event) arg;
                 Assert.assertTrue(Event.Type.CREATE.equals(event.getType()));
             }
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
         
         try
         {
-            final OFactoryChild child = this._ofactory
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory
                     .create(MockOFactoryChildImpl.class);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
             Assert.assertTrue(className.equals(child.getKey()));
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -91,7 +91,7 @@ public class OFactoryObservableTest
     @Test
     public void testCreateChildWithClassNameKey()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         Observer ofactoryObserver = new Observer()
         {
@@ -100,27 +100,27 @@ public class OFactoryObservableTest
             public void update(Observable o, Object arg)
             {
                 // System.out.println("Observable: " + o + " Event: " + arg);
-                OFactory ofactory = (OFactory) o;
+                OFactory<?> ofactory = (OFactory<?>) o;
                 Assert.assertTrue(ofactory
-                        .equals(OFactoryObservableTest._ofactory));
-                OFactoryObservableTest._observerCalled = true;
+                        .equals(OFactoryObservableTest.s_ofactory));
+                OFactoryObservableTest.s_observerCalled = true;
                 Event event = (Event) arg;
                 Assert.assertTrue(Event.Type.CREATE.equals(event.getType()));
             }
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
         
         final String className = "org.gabsocial.ofactory.impl.MockOFactoryChildImpl";
         
         try
         {
-            final OFactoryChild child = this._ofactory.create(className);
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory.create(className);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
             Assert.assertTrue(className.equals(child.getKey()));
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -131,7 +131,7 @@ public class OFactoryObservableTest
     @Test
     public void testCreateChildWithKeyAndClass()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         Observer ofactoryObserver = new Observer()
         {
@@ -140,28 +140,28 @@ public class OFactoryObservableTest
             public void update(Observable o, Object arg)
             {
                 // System.out.println("Observable: " + o + " Event: " + arg);
-                OFactory ofactory = (OFactory) o;
+                OFactory<?> ofactory = (OFactory<?>) o;
                 Assert.assertTrue(ofactory
-                        .equals(OFactoryObservableTest._ofactory));
-                OFactoryObservableTest._observerCalled = true;
+                        .equals(OFactoryObservableTest.s_ofactory));
+                OFactoryObservableTest.s_observerCalled = true;
                 Event event = (Event) arg;
                 Assert.assertTrue(Event.Type.CREATE.equals(event.getType()));
             }
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
         
         final String key = "test-mock-o";
         
         try
         {
-            final OFactoryChild child = this._ofactory.create(key,
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory.create(key,
                     MockOFactoryChildImpl.class);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
             Assert.assertTrue(key.equals(child.getKey()));
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -172,7 +172,7 @@ public class OFactoryObservableTest
     @Test
     public void testCreateChildWithKeyAndClassName()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         Observer ofactoryObserver = new Observer()
         {
@@ -181,28 +181,28 @@ public class OFactoryObservableTest
             public void update(Observable o, Object arg)
             {
                 // System.out.println("Observable: " + o + " Event: " + arg);
-                OFactory ofactory = (OFactory) o;
+                OFactory<?> ofactory = (OFactory<?>) o;
                 Assert.assertTrue(ofactory
-                        .equals(OFactoryObservableTest._ofactory));
-                OFactoryObservableTest._observerCalled = true;
+                        .equals(OFactoryObservableTest.s_ofactory));
+                OFactoryObservableTest.s_observerCalled = true;
                 Event event = (Event) arg;
                 Assert.assertTrue(Event.Type.CREATE.equals(event.getType()));
             }
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
         
         final String key = "test-mock-o";
         final String className = "org.gabsocial.ofactory.impl.MockOFactoryChildImpl";
         
         try
         {
-            final OFactoryChild child = this._ofactory.create(key, className);
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory.create(key, className);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
             Assert.assertTrue(key.equals(child.getKey()));
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -213,7 +213,7 @@ public class OFactoryObservableTest
     @Test
     public void testFactoryAddObserver()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         Observer ofactoryObserver = new Observer()
         {
@@ -227,14 +227,14 @@ public class OFactoryObservableTest
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
-        Assert.assertTrue(this._ofactory.countObservers() == 1);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory.countObservers() == 1);
     }
     
     @Test
     public void testFactoryDeleteObserver()
     {
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         Observer ofactoryObserver = new Observer()
         {
@@ -249,23 +249,23 @@ public class OFactoryObservableTest
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
-        Assert.assertTrue(this._ofactory.countObservers() == 1);
-        this._ofactory.deleteObserver(ofactoryObserver);
-        Assert.assertTrue(this._ofactory.countObservers() == 0);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory.countObservers() == 1);
+        OFactoryObservableTest.s_ofactory.deleteObserver(ofactoryObserver);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory.countObservers() == 0);
     }
     
     @Test
     public void testGetChildWithClassNameKey()
     {
         
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         final String className = "org.gabsocial.ofactory.impl.MockOFactoryChildImpl";
         
         try
         {
-            this._ofactory.create(className);
+            OFactoryObservableTest.s_ofactory.create(className);
             
             Observer ofactoryObserver = new Observer()
             {
@@ -275,24 +275,24 @@ public class OFactoryObservableTest
                 {
                     // System.out.println("Observable: " + o + " Event: " +
                     // arg);
-                    OFactory ofactory = (OFactory) o;
+                    OFactory<?> ofactory = (OFactory<?>) o;
                     Assert.assertTrue(ofactory
-                            .equals(OFactoryObservableTest._ofactory));
-                    OFactoryObservableTest._observerCalled = true;
+                            .equals(OFactoryObservableTest.s_ofactory));
+                    OFactoryObservableTest.s_observerCalled = true;
                     Event event = (Event) arg;
                     Assert.assertTrue(Event.Type.GET.equals(event.getType()));
                 }
                 
             };
             
-            this._ofactory.addObserver(ofactoryObserver);
+            OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
             
             final String key = MockOFactoryChildImpl.class.getName();
-            final OFactoryChild child = this._ofactory.get(key);
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory.get(key);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child.getKey().equals(key));
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -305,14 +305,14 @@ public class OFactoryObservableTest
     public void testGetChildWithKey()
     {
         
-        Assert.assertTrue(this._ofactory != null);
+        Assert.assertTrue(OFactoryObservableTest.s_ofactory != null);
         
         final String key = "test-mock-o";
         final String className = "org.gabsocial.ofactory.impl.MockOFactoryChildImpl";
         
         try
         {
-            this._ofactory.create(key, className);
+            OFactoryObservableTest.s_ofactory.create(key, className);
             
             Observer ofactoryObserver = new Observer()
             {
@@ -322,23 +322,23 @@ public class OFactoryObservableTest
                 {
                     // System.out.println("Observable: " + o + " Event: " +
                     // arg);
-                    OFactory ofactory = (OFactory) o;
+                    OFactory<?> ofactory = (OFactory<?>) o;
                     Assert.assertTrue(ofactory
-                            .equals(OFactoryObservableTest._ofactory));
-                    OFactoryObservableTest._observerCalled = true;
+                            .equals(OFactoryObservableTest.s_ofactory));
+                    OFactoryObservableTest.s_observerCalled = true;
                     Event event = (Event) arg;
                     Assert.assertTrue(Event.Type.GET.equals(event.getType()));
                 }
                 
             };
             
-            this._ofactory.addObserver(ofactoryObserver);
+            OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
             
-            final OFactoryChild child = this._ofactory.get(key);
+            final OFactoryChild child = OFactoryObservableTest.s_ofactory.get(key);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child.getKey().equals(key));
             Assert.assertTrue(child instanceof MockOFactoryChildImpl);
-            Assert.assertTrue(OFactoryObservableTest._observerCalled);
+            Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         }
         catch (final OFactoryChildException e)
         {
@@ -358,20 +358,20 @@ public class OFactoryObservableTest
             public void update(Observable o, Object arg)
             {
                 // System.out.println("Observable: " + o + " Event: " + arg);
-                OFactory ofactory = (OFactory) o;
+                OFactory<?> ofactory = (OFactory<?>) o;
                 Assert.assertTrue(ofactory
-                        .equals(OFactoryObservableTest._ofactory));
-                OFactoryObservableTest._observerCalled = true;
+                        .equals(OFactoryObservableTest.s_ofactory));
+                OFactoryObservableTest.s_observerCalled = true;
                 Event event = (Event) arg;
                 Assert.assertTrue(Event.Type.CLOSE.equals(event.getType()));
             }
             
         };
         
-        this._ofactory.addObserver(ofactoryObserver);
+        OFactoryObservableTest.s_ofactory.addObserver(ofactoryObserver);
         
-        this._ofactory.close();
-        Assert.assertTrue(OFactoryObservableTest._observerCalled);
+        OFactoryObservableTest.s_ofactory.close();
+        Assert.assertTrue(OFactoryObservableTest.s_observerCalled);
         
     }
     

@@ -77,7 +77,6 @@ public abstract interface OFactoryChild
      *            A <code>String</code> instance that is the key associated with
      *            this child. OFactoryChild.getKey() should return this value.
      */
-    public abstract <P extends OFactory> void initialize(final P parent,
-            final String key);
+    public abstract <P extends OFactory> void initialize(final P parent, final String key);
     
 }

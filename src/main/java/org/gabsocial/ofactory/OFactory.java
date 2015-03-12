@@ -25,7 +25,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import org.gabsocial.common.validator.Validate;
+import org.gabsocial.gabdev.validate.Validate;
 
 
 /**
@@ -60,7 +60,7 @@ import org.gabsocial.common.validator.Validate;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactory extends Observable
+public class OFactory<C extends OFactoryChild> extends Observable
 {
     
     // P = parent
@@ -75,15 +75,25 @@ public class OFactory extends Observable
      * @author Gregory Brown (sysdevone)
      * 
      */
-    public static class Event
+    public static class Event<C>
     {
         public static enum Type
         {
             CLOSE, CREATE, GET, REMOVE;
         }
         
-        private OFactoryChild    _child;
+        /*
+         * The child value that the event is about.
+         */
+        private C                _child;
+        /*
+         * The type of event regarding the child.
+         */
         private final Event.Type _eventType;
+        
+        /*
+         * The key that is bound to the child instance.
+         */
         private String           _key;
         
         /**
@@ -102,16 +112,19 @@ public class OFactory extends Observable
          * 
          * @param eventType
          *            An enum <code>Type</code> that defined the type of event.
+         * @param key A <code>String</code> instance that is the key bound to the child instance.
+         * @param child
+         *            An instance that implements the <code>OFactoryChild</code>
+         *            interface.  
          */
-        public Event(final Event.Type eventType, final String key,
-                final OFactoryChild child)
+        public Event(final Event.Type eventType, final String key, final C child)
         {
             this(eventType);
             this._key = key;
             this._child = child;
         }
         
-        public OFactoryChild getChild()
+        public C getChild()
         {
             return (this._child);
         }
@@ -125,8 +138,10 @@ public class OFactory extends Observable
         {
             return (this._eventType);
         }
-
-        /* (non-Javadoc)
+        
+        /*
+         * (non-Javadoc)
+         * 
          * @see java.lang.Object#toString()
          */
         @Override
@@ -143,7 +158,6 @@ public class OFactory extends Observable
             return builder.toString();
         }
         
-        
     }
     
     /**
@@ -154,13 +168,11 @@ public class OFactory extends Observable
      *            name.
      * @return A subclass of <code>OFactoryChild</code>
      */
+    @SuppressWarnings("unchecked")
     protected final static <C extends OFactoryChild> C loadOFactoryChild(
             final String className)
     {
-        Validate.isNullOrEmpty(
-                className,
-                "loadOFactoryChild() - the parameter 'className' should not be null or empty",
-                OFactory.class);
+        assert (className != null) : "loadOFactoryChild() - the parameter 'className' should not be null or empty";
         
         C child;
         try
@@ -186,21 +198,21 @@ public class OFactory extends Observable
     }
     
     /**
-     * A table of children.
+     * A table of children created by this factory.
      */
-    private final Map<String, OFactoryChild> _children;
+    private final Map<String, C> _children;
     
     /**
      * A flag to determine if the factory has been closed.
      */
-    private boolean                          _isClosed;
+    private boolean              _isClosed;
     
     /*
      * initializes the children table.
      */
     public OFactory()
     {
-        this._children = new HashMap<String, OFactoryChild>();
+        this._children = new HashMap<String, C>();
         this._isClosed = false;
     }
     
@@ -238,8 +250,7 @@ public class OFactory extends Observable
      *            A <code>OFactoryChild</code> instance that will be added to
      *            the cache.
      */
-    protected <C extends OFactoryChild> C addToChildTable(final String key,
-            final C child)
+    protected C addToChildTable(final String key, final C child)
     {
         assert ((key != null) && (key.trim().length() > 0)) : "addToChildTable() - the key was null, spaces or empty.";
         assert (child != null) : "addToChildTable() - the child was null.";
@@ -276,7 +287,7 @@ public class OFactory extends Observable
             
             this._isClosed = true;
             
-            this.notifyObservers(new Event(Event.Type.CLOSE));
+            this.notifyObservers(new Event<C>(Event.Type.CLOSE));
             this.deleteObservers();
             assert (this.countObservers() == 0) : "The observable table should be empty.";
         }
@@ -294,7 +305,7 @@ public class OFactory extends Observable
      * @throws OFactoryClosedException
      *             if this method is called and the OFactory is closed.
      */
-    public <C extends OFactoryChild> C closeChild(final String key)
+    public C closeChild(final String key)
     {
         if (this.isClosed())
         {
@@ -303,17 +314,17 @@ public class OFactory extends Observable
         }
         else
         {
-            Validate.isNullOrEmpty(key,
-                    "closeChild() - The parameter 'key' was null or empty",
-                    this.getClass());
+            Validate.isNotNullOrEmpty(this.getClass(),
+                    "closeChild() - The parameter 'key' was null or empty", key);
             
+            @SuppressWarnings("unchecked")
             final C child = (C) this._children.remove(key);
             if (child != null)
             {
                 child.closeWithoutRemove();
                 assert (!this._children.containsKey(child.getKey())) : "The children table still contains the factory child when the factory child was closed.";
             }
-            this.notifyObservers(new Event(Event.Type.REMOVE, key, child));
+            this.notifyObservers(new Event<C>(Event.Type.REMOVE, key, child));
             return (child);
         }
     }
@@ -338,6 +349,7 @@ public class OFactory extends Observable
         }
         else
         {
+            // NOTE: no need to validate the key parameter.
             return (this._children.containsKey(key));
         }
     }
@@ -356,14 +368,13 @@ public class OFactory extends Observable
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends OFactoryChild> C create(final Class<C> clazz)
-            throws OFactoryChildException
+    public C create(final Class<C> clazz) throws OFactoryChildException
     {
         return (this.create(clazz.getName(), clazz.getName()));
     }
     
     /**
-     * Creates a child associated with a key that is the fully qualifed
+     * Creates a child associated with a key that is the fully qualified
      * className.
      * 
      * @param className
@@ -377,8 +388,7 @@ public class OFactory extends Observable
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends OFactoryChild> C create(final String className)
-            throws OFactoryChildException
+    public C create(final String className) throws OFactoryChildException
     {
         return (this.create(className, className));
     }
@@ -398,8 +408,8 @@ public class OFactory extends Observable
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends OFactoryChild> C create(final String key,
-            final Class<C> clazz) throws OFactoryChildException
+    public C create(final String key, final Class<C> clazz)
+            throws OFactoryChildException
     {
         return (this.create(key, clazz.getName()));
     }
@@ -422,13 +432,18 @@ public class OFactory extends Observable
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    public <C extends OFactoryChild> C create(final String key,
-            final String className) throws OFactoryChildException
+    public C create(final String key, final String className)
+            throws OFactoryChildException
     {
-        // other methods do parameter validation.
+        Validate.isNotNullOrEmpty(this.getClass(),
+                "create() - The parameter 'key' was null or empty", key);
+        Validate.isNotNullOrEmpty(this.getClass(),
+                "create() - The parameter 'className' was null or empty",
+                className);
+        
         final C child = this.loadAndStoreOFactoryChild(key, className);
         child.initialize(this, key);
-        this.notifyObservers(new Event(Event.Type.CREATE, key, child));
+        this.notifyObservers(new Event<C>(Event.Type.CREATE, key, child));
         return child;
     }
     
@@ -444,7 +459,7 @@ public class OFactory extends Observable
      * @throws OFactoryClosedException
      *             if this method is called and the OFactory is closed.
      */
-    public <C extends OFactoryChild> C get(final String key)
+    public C get(final String key)
     {
         if (this.isClosed())
         {
@@ -453,12 +468,13 @@ public class OFactory extends Observable
         }
         else
         {
-            Validate.isNullOrEmpty(key,
+            Validate.isNotNullOrEmpty(this.getClass(),
                     "get() - the parameter 'key' should not be null or empty",
-                    this.getClass());
+                    key);
             
+            @SuppressWarnings("unchecked")
             final C child = (C) this._children.get(key);
-            this.notifyObservers(new Event(Event.Type.GET, key, child));
+            this.notifyObservers(new Event<C>(Event.Type.GET, key, child));
             return (child);
             
         }
@@ -557,9 +573,8 @@ public class OFactory extends Observable
      * @throws OFactoryChildException
      *             Thrown when an OFactoryChild already exists with that key.
      */
-    protected final <C extends OFactoryChild> C loadAndStoreOFactoryChild(
-            final String key, final String className)
-            throws OFactoryChildException
+    protected final C loadAndStoreOFactoryChild(final String key,
+            final String className) throws OFactoryChildException
     {
         if (this.isClosed())
         {
@@ -568,14 +583,9 @@ public class OFactory extends Observable
         }
         else
         {
-            Validate.isNullOrEmpty(
-                    key,
-                    "create() - the parameter 'key' should not be null or empty",
-                    this.getClass());
-            Validate.isNullOrEmpty(
-                    className,
-                    "create() - the parameter 'className' should not be null or empty",
-                    this.getClass());
+            
+            assert (key != null && key.length() != 0) : "loadAndStoreOFactoryChild() - the parameter 'key' should not be null or empty";
+            assert (className != null && className.length() != 0) : "loadAndStoreOFactoryChild() - the parameter 'className' should not be null or empty";
             
             if (this.containsChild(key))
             {
@@ -599,8 +609,9 @@ public class OFactory extends Observable
      *            An <code>OFactory</code> event that indicates a CREATE,
      *            REMOVE, GET, CLOSE;
      */
-    protected void notifyObservers(final Event event)
+    protected void notifyObservers(final Event<C> event)
     {
+        assert (event != null) : "notifyObservers() - The parameter 'event' must not be null.";
         this.setChanged();
         if (this.countObservers() > 0)
         {
@@ -626,11 +637,18 @@ public class OFactory extends Observable
         }
         else
         {
+            Validate.isNotNull(
+                    this.getClass(),
+                    "removeObserver() - the parameter 'observer' should not be null",
+                    observer);
+            
             this.deleteObserver(observer);
         }
     }
     
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
     @Override
