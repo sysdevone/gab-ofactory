@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.gabsocial.ofactory</groupId>
 	<artifactId>ofactory</artifactId>
-	<version>0.2.alpha</version>
+	<version>0.3.alpha</version>
 	<packaging>jar</packaging>
 
 	<name>GAB Social OFactory Framework</name>
