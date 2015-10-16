@@ -47,6 +47,9 @@ public abstract interface PropertiedOFactoryChild
      * 
      * @param settings
      *            An object that holds setting information. Must not be null.
+     *            
+     * @param <P> A type that extends <code>PropertiedOFactory</code>.
+     * @param <S> A type representing the settings passed into this instance.
      */
     public abstract <P extends PropertiedOFactory, S> void initialize(final P parent, final String key,
             final S settings);
@@ -54,6 +57,7 @@ public abstract interface PropertiedOFactoryChild
     /**
      * Returns the settings used when the child was initialized.
      * 
+     * @param <S> A type representing the settings passed into this instance.
      * @return The settings object passed in when the child was created.
      */
     public abstract <S> S getSettings();

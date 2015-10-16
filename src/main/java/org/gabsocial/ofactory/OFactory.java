@@ -167,6 +167,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            A <code>String</code> value that is a fully qualified class
      *            name.
      * @return A subclass of <code>OFactoryChild</code>
+     * 
+     * @param <C> A type that extends <code>OFactoryChild</code>.
      */
     @SuppressWarnings("unchecked")
     protected final static <C extends OFactoryChild> C loadOFactoryChild(
@@ -249,6 +251,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * @param child
      *            A <code>OFactoryChild</code> instance that will be added to
      *            the cache.
+     *            
+     * @return Returns the child that was added to the table.
      */
     protected C addToChildTable(final String key, final C child)
     {
@@ -357,7 +361,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
     /**
      * Creates a child associated with a key that is the classname.
      * 
-     * @param Class
+     * @param clazz
      *            The class type to create a child from. Uses the Classes fully
      *            qualified name as the key.
      * 
@@ -398,7 +402,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * 
      * @param key
      *            The key to bind to the new child.
-     * @param Class
+     * @param clazz
      *            The class type to create a child from.
      * 
      * @return A <code>OFactoryChild</code> instance bound to the key.
@@ -483,7 +487,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
     /**
      * Returns the number of children created and managed by this Factory.
      * 
-     * @return An integer value (0 <= x <= n) that is the number of children.
+     * @return An integer value such that 0 &lt;= x &lt;= n is the number of children.
      * 
      * @throws OFactoryClosedException
      *             if this method is called and the OFactory is closed.
@@ -527,7 +531,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
     /**
      * Get the current number of observers wanting to be notified of events.
      * 
-     * @return An <code>int</code> value 0 <= x <= n.
+     * @return An <code>int</code> value 0 &lt;= x &lt;= n.
      */
     public int getObserverCount()
     {

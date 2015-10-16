@@ -62,13 +62,15 @@ public abstract interface OFactoryChild
      * the parent reference that was assigned when the
      * OFactoryChild.initialize(parent,key) was called.
      * 
-     * @return An instance that extends <code>OFactory</code>.
+     * @param <P> An instance that extends <code>OFactory</code>.
+     * @return <P> An instance that extends <code>OFactory</code>.
      */
     public abstract <P extends OFactory> P getParent();
     
     /**
      * Initializes the OFactoryChild.
      * 
+     * @param <P> An instance that extends <code>OFactory</code>.
      * @param parent
      *            An <code>OFactory</code> instance that is the parent to this
      *            child.
