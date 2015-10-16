@@ -40,9 +40,9 @@
 		<dependency>
 			<groupId>org.gabsocial</groupId>
 			<artifactId>gab-dev</artifactId>
-			<version>0.3.alpha</version>
+			<version>0.4.alpha</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/gab-dev-0.3.alpha.jar</systemPath>
+			<systemPath>${project.basedir}/lib/gab-dev-0.4.alpha.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
