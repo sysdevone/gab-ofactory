@@ -62,6 +62,15 @@ import org.gabsocial.gabdev.validate.Validate;
  */
 public class OFactory<C extends OFactoryChild> extends Observable
 {
+    /**
+     * The maximum length a key can be.
+     */
+    public static final int KEY_MAX_LENGTH        = 256;
+    
+    /**
+     * The maximum length a key can be.
+     */
+    public static final int CLASS_NAME_MAX_LENGTH = 2048;
     
     // P = parent
     // C = child
@@ -104,6 +113,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
          */
         public Event(final Event.Type eventType)
         {
+            Validate.isNotNull(this.getClass(), eventType);
+            
             this._eventType = eventType;
         }
         
@@ -112,28 +123,53 @@ public class OFactory<C extends OFactoryChild> extends Observable
          * 
          * @param eventType
          *            An enum <code>Type</code> that defined the type of event.
-         * @param key A <code>String</code> instance that is the key bound to the child instance.
+         * @param key
+         *            A <code>String</code> instance that is the key bound to
+         *            the child instance.
          * @param child
          *            An instance that implements the <code>OFactoryChild</code>
-         *            interface.  
+         *            interface.
          */
         public Event(final Event.Type eventType, final String key, final C child)
         {
             this(eventType);
+            
+            Validate.isNotNullOrEmpty(this.getClass(), key);
+            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+            
+            Validate.isNotNull(this.getClass(), child);
+            
             this._key = key;
             this._child = child;
         }
         
+        /**
+         * Returns the child
+         * 
+         * @return An instance that implements the <code>OFactoryChild</code>
+         *         interface.
+         */
         public C getChild()
         {
             return (this._child);
         }
         
+        /**
+         * Returns the key.
+         * 
+         * @return A <code>String</code> instance that is the key bound to the
+         *         child instance.
+         */
         public String getKey()
         {
             return (this._key);
         }
         
+        /**
+         * Returns the type of event.
+         * 
+         * @return An enum <code>Type</code> that defined the type of event.
+         */
         public Event.Type getType()
         {
             return (this._eventType);
@@ -148,11 +184,11 @@ public class OFactory<C extends OFactoryChild> extends Observable
         public String toString()
         {
             StringBuilder builder = new StringBuilder();
-            builder.append("Event [_eventType=");
+            builder.append("Event [eventType=");
             builder.append(this._eventType);
-            builder.append(", _key=");
+            builder.append(", key=");
             builder.append(this._key);
-            builder.append(", _child=");
+            builder.append(", child=");
             builder.append(this._child);
             builder.append("]");
             return builder.toString();
@@ -168,7 +204,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            name.
      * @return A subclass of <code>OFactoryChild</code>
      * 
-     * @param <C> A type that extends <code>OFactoryChild</code>.
+     * @param <C>
+     *            A type that extends <code>OFactoryChild</code>.
      */
     @SuppressWarnings("unchecked")
     protected final static <C extends OFactoryChild> C loadOFactoryChild(
@@ -227,6 +264,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
      */
     public synchronized void addObserver(final Observer observer)
     {
+        Validate.isNotNull(this.getClass(), observer);
+        
         if (this.isClosed())
         {
             throw (new OFactoryClosedException(
@@ -251,7 +290,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * @param child
      *            A <code>OFactoryChild</code> instance that will be added to
      *            the cache.
-     *            
+     * 
      * @return Returns the child that was added to the table.
      */
     protected C addToChildTable(final String key, final C child)
@@ -318,8 +357,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
         }
         else
         {
-            Validate.isNotNullOrEmpty(this.getClass(),
-                    "closeChild() - The parameter 'key' was null or empty", key);
+            Validate.isNotNullOrEmpty(this.getClass(), key);
+            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
             
             @SuppressWarnings("unchecked")
             final C child = (C) this._children.remove(key);
@@ -353,7 +392,9 @@ public class OFactory<C extends OFactoryChild> extends Observable
         }
         else
         {
-            // NOTE: no need to validate the key parameter.
+            Validate.isNotNullOrEmpty(this.getClass(), key);
+            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+            
             return (this._children.containsKey(key));
         }
     }
@@ -439,10 +480,10 @@ public class OFactory<C extends OFactoryChild> extends Observable
     public C create(final String key, final String className)
             throws OFactoryChildException
     {
-        Validate.isNotNullOrEmpty(this.getClass(),
-                "create() - The parameter 'key' was null or empty", key);
-        Validate.isNotNullOrEmpty(this.getClass(),
-                "create() - The parameter 'className' was null or empty",
+        Validate.isNotNullOrEmpty(this.getClass(), key);
+        Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+        Validate.isNotNullOrEmpty(this.getClass(), className);
+        Validate.isLessThanMaxLength(this.getClass(), CLASS_NAME_MAX_LENGTH,
                 className);
         
         final C child = this.loadAndStoreOFactoryChild(key, className);
@@ -472,9 +513,9 @@ public class OFactory<C extends OFactoryChild> extends Observable
         }
         else
         {
-            Validate.isNotNullOrEmpty(this.getClass(),
-                    "get() - the parameter 'key' should not be null or empty",
-                    key);
+            Validate.isNotNullOrEmpty(this.getClass(), key);
+            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+            // TODO - can make max length check based on the max length of a registered key.
             
             @SuppressWarnings("unchecked")
             final C child = (C) this._children.get(key);
@@ -487,7 +528,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
     /**
      * Returns the number of children created and managed by this Factory.
      * 
-     * @return An integer value such that 0 &lt;= x &lt;= n is the number of children.
+     * @return An integer value such that 0 &lt;= x &lt;= n is the number of
+     *         children.
      * 
      * @throws OFactoryClosedException
      *             if this method is called and the OFactory is closed.
@@ -523,6 +565,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
         else
         {
             final Set<String> keys = this._children.keySet();
+            assert (keys != null) : "The set that holds the keys is null when it should not be.";
             return (keys);
             
         }
@@ -641,10 +684,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
         }
         else
         {
-            Validate.isNotNull(
-                    this.getClass(),
-                    "removeObserver() - the parameter 'observer' should not be null",
-                    observer);
+            Validate.isNotNull(this.getClass(), observer);
             
             this.deleteObserver(observer);
         }
@@ -659,9 +699,9 @@ public class OFactory<C extends OFactoryChild> extends Observable
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("OFactory [_children=");
+        builder.append("OFactory [children=");
         builder.append(this._children);
-        builder.append(", _isClosed=");
+        builder.append(", isClosed=");
         builder.append(this._isClosed);
         builder.append("]");
         return builder.toString();

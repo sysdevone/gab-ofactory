@@ -19,6 +19,7 @@
 
 package org.gabsocial.ofactory;
 
+import org.gabsocial.gabdev.validate.Validate;
 import org.gabsocial.ofactory.OFactory;
 import org.gabsocial.ofactory.OFactoryChild;
 import org.gabsocial.ofactory.OFactoryClosedException;
@@ -68,6 +69,8 @@ public abstract class BaseOFactoryChild implements OFactoryChild
         }
         else
         {
+            assert( this._key != null ) : "close(): the key is null.";
+            assert( this._parent != null ) : "close(): the parent is null.";
             this._parent.closeChild(this._key);
             this._parent = null;
             this._isClosed = true;
@@ -90,7 +93,8 @@ public abstract class BaseOFactoryChild implements OFactoryChild
         }
         else
         {
-            
+            assert( this._key != null ) : "close(): the key is null.";
+            assert( this._parent != null ) : "close(): the parent is null.";
             // release the reference to the parent.
             // DO NOT CLOSE IT.
             this._parent = null;
@@ -135,6 +139,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
         }
         else
         {
+            assert( this._key != null ) : "getKey(): the key is null.";
             return (this._key);
         }
     }
@@ -154,6 +159,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
         }
         else
         {
+            assert( this._parent != null ) : "getParent(): the parent is null.";
             return (P) (this._parent);
         }
     }
@@ -183,6 +189,9 @@ public abstract class BaseOFactoryChild implements OFactoryChild
     @Override
     public <P extends OFactory> void initialize(final P parent, final String key)
     {
+        Validate.isNotNull(this.getClass(), parent);
+        Validate.isNotNullOrEmpty(this.getClass(), key);
+        
         this._parent = parent;
         this._key = key;
         this._isClosed = false;
@@ -197,7 +206,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("BaseOFactoryChildImpl [_isClosed=");
+        builder.append("BaseOFactoryChild [_isClosed=");
         builder.append(this._isClosed);
         builder.append(", _key=");
         builder.append(this._key);

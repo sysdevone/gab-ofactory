@@ -19,6 +19,8 @@
 
 package org.gabsocial.ofactory;
 
+import org.gabsocial.gabdev.validate.Validate;
+
 
 
 /**
@@ -135,6 +137,13 @@ public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
     public C create(final String key, final String className, final S settings)
             throws OFactoryChildException
     {
+        Validate.isNotNullOrEmpty(this.getClass(), key);
+        Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+        Validate.isNotNullOrEmpty(this.getClass(), className);
+        Validate.isLessThanMaxLength(this.getClass(), CLASS_NAME_MAX_LENGTH,
+                className);
+        Validate.isNotNull(this.getClass(), settings);
+        
         // other methods do parameter validation.
         final C child = this.loadAndStoreOFactoryChild(key, className);
         child.initialize(this, key, settings);

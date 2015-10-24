@@ -19,6 +19,7 @@
 
 package org.gabsocial.ofactory;
 
+import org.gabsocial.gabdev.validate.Validate;
 import org.gabsocial.ofactory.PropertiedOFactory;
 import org.gabsocial.ofactory.PropertiedOFactoryChild;
 
@@ -48,6 +49,10 @@ public abstract class BasePropertiedOFactoryChild extends
     public <P extends PropertiedOFactory, S> void initialize(final P parent,
             final String key, S settings)
     {
+        Validate.isNotNull(this.getClass(), parent);
+        Validate.isNotNullOrEmpty(this.getClass(), key);
+        Validate.isNotNull(this.getClass(), settings);
+        
         super.initialize(parent, key);
         this._settings = settings;
     }
@@ -59,6 +64,7 @@ public abstract class BasePropertiedOFactoryChild extends
      */
     public <S> S getSettings()
     {
+        assert( this._settings != null ) : "The settings should not be NULL.";
         return (S) (this._settings);
     }
     
