@@ -17,16 +17,16 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 /**
  * 
  * An interface to implement if an object is to be managed by the
- * <code>OFactory</code>.
+ * <code>Manager</code>.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract interface OFactoryChild
+public abstract interface Manageable
 {
     
     // P = parent
@@ -35,22 +35,22 @@ public abstract interface OFactoryChild
     
     /**
      * Removes the child from the parent then closes any resources. This should
-     * call the parent OFactory.closeChild(key).
+     * call the parent Manager.closeChild(key).
      * 
      */
     public abstract void close();
     
     /**
-     * Used by OFactory as a callback when the OFactory.close() method is
+     * Used by Manager as a callback when the Manager.close() method is
      * called. Closes down the child by releasing all referenced members. Does
-     * not call the OFactory.closeChild(key). The OFactory.closeChild(key) calls
+     * not call the Manager.closeChild(key). The Manager.closeChild(key) calls
      * back to this method.
      */
     public abstract void closeWithoutRemove();
     
     /**
-     * Gets the key associated with this OFactoryChild. This should return the
-     * key value that was assigned when the OFactoryChild.initialize(parent,key)
+     * Gets the key associated with this ManagerChild. This should return the
+     * key value that was assigned when the ManagerChild.initialize(parent,key)
      * was called.
      * 
      * @return A <code> String </code> instance.
@@ -58,27 +58,27 @@ public abstract interface OFactoryChild
     public abstract String getKey();
     
     /**
-     * Gets the parent that this OFactoryChild belongs too. This should return
+     * Gets the parent that this ManagerChild belongs too. This should return
      * the parent reference that was assigned when the
-     * OFactoryChild.initialize(parent,key) was called.
+     * ManagerChild.initialize(parent,key) was called.
      * 
-     * @param <P> An instance that extends <code>OFactory</code>.
-     * @return <P> An instance that extends <code>OFactory</code>.
+     * @param <P> An instance that extends <code>Manager</code>.
+     * @return <P> An instance that extends <code>Manager</code>.
      */
-    public abstract <P extends OFactory> P getParent();
+    public abstract <P extends Manager> P getParent();
     
     /**
-     * Initializes the OFactoryChild.
+     * Initializes the ManagerChild.
      * 
-     * @param <P> An instance that extends <code>OFactory</code>.
+     * @param <P> An instance that extends <code>Manager</code>.
      * @param parent
-     *            An <code>OFactory</code> instance that is the parent to this
+     *            An <code>Manager</code> instance that is the parent to this
      *            child.
      * 
      * @param key
      *            A <code>String</code> instance that is the key associated with
-     *            this child. OFactoryChild.getKey() should return this value.
+     *            this child. ManagerChild.getKey() should return this value.
      */
-    public abstract <P extends OFactory> void initialize(final P parent, final String key);
+    public abstract <P extends Manager> void initialize(final P parent, final String key);
     
 }

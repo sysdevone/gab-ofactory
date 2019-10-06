@@ -17,11 +17,11 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 import java.util.Properties;
 
-import org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl;
+import com.gabstudios.manager.impl.MockPropertiedManagerChildImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,37 +29,37 @@ import org.junit.Test;
 
 /**
  * 
- * Test class for the <code>PropertiedOFactory</code>
+ * Test class for the <code>PropertiedManager</code>
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class PropertiedOFactoryTest
+public class PropertiedManagerTest
 {
     
-    PropertiedOFactory<MockPropertiedOFactoryChildImpl, Properties> _propertiedOFactory;
+    PropertiedManager<MockPropertiedManagerChildImpl, Properties> _propertiedManager;
     
     @Before
     public void setup()
     {
-        this._propertiedOFactory = new PropertiedOFactory<MockPropertiedOFactoryChildImpl, Properties>();
+        this._propertiedManager = new PropertiedManager<MockPropertiedManagerChildImpl, Properties>();
     }
     
     @Test
     public void testCreateChildWithClassKey()
     {
-        Assert.assertTrue(this._propertiedOFactory != null);
-        final String className = "org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl";
+        Assert.assertTrue(this._propertiedManager != null);
+        final String className = "com.gabstudios.manager.impl.MockPropertiedManagerChildImpl";
         try
         {
             Properties properties = new Properties();
-            final MockPropertiedOFactoryChildImpl child = this._propertiedOFactory
-                    .create(MockPropertiedOFactoryChildImpl.class, properties);
+            final MockPropertiedManagerChildImpl child = this._propertiedManager
+                    .create(MockPropertiedManagerChildImpl.class, properties);
             Assert.assertTrue(child != null);
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
             Assert.assertTrue(className.equals(child.getKey()));
             
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }
@@ -68,19 +68,19 @@ public class PropertiedOFactoryTest
     @Test
     public void testCreateChildWithClassNameKey()
     {
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
         
-        final String className = "org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl";
+        final String className = "com.gabstudios.manager.impl.MockPropertiedManagerChildImpl";
         
         try
         {
-            final PropertiedOFactoryChild child = this._propertiedOFactory
+            final PropertiedManageable child = this._propertiedManager
                     .create(className);
             Assert.assertTrue(child != null);
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
             Assert.assertTrue(className.equals(child.getKey()));
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }
@@ -89,19 +89,19 @@ public class PropertiedOFactoryTest
     @Test
     public void testCreateChildWithKeyAndClass()
     {
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
         
         final String key = "test-mock-o";
         
         try
         {
-            final PropertiedOFactoryChild child = (PropertiedOFactoryChild) this._propertiedOFactory.create(key,
-                    MockPropertiedOFactoryChildImpl.class);
+            final PropertiedManageable child = (PropertiedManageable) this._propertiedManager.create(key,
+                    MockPropertiedManagerChildImpl.class);
             Assert.assertTrue(child != null);
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
             Assert.assertTrue(key.equals(child.getKey()));
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }
@@ -110,50 +110,50 @@ public class PropertiedOFactoryTest
     @Test
     public void testCreateChildWithKeyAndClassName()
     {
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
         
         final String key = "test-mock-o";
-        final String className = "org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl";
+        final String className = "com.gabstudios.manager.impl.MockPropertiedManagerChildImpl";
         
         try
         {
-            final PropertiedOFactoryChild child = this._propertiedOFactory.create(key,
+            final PropertiedManageable child = this._propertiedManager.create(key,
                     className);
             Assert.assertTrue(child != null);
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
             Assert.assertTrue(key.equals(child.getKey()));
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }
     }
     
     @Test
-    public void testFactoryCreation()
+    public void testManagerCreation()
     {
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
     }
     
     @Test
     public void testGetChildWithClassNameKey()
     {
         
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
         
-        final String className = "org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl";
+        final String className = "com.gabstudios.manager.impl.MockPropertiedManagerChildImpl";
         
         try
         {
-            this._propertiedOFactory.create(className);
+            this._propertiedManager.create(className);
             
-            final String key = MockPropertiedOFactoryChildImpl.class.getName();
-            final OFactoryChild child = this._propertiedOFactory.get(key);
+            final String key = MockPropertiedManagerChildImpl.class.getName();
+            final Manageable child = this._propertiedManager.get(key);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child.getKey().equals(key));
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }
@@ -164,21 +164,21 @@ public class PropertiedOFactoryTest
     public void testGetChildWithKey()
     {
         
-        Assert.assertTrue(this._propertiedOFactory != null);
+        Assert.assertTrue(this._propertiedManager != null);
         
         final String key = "test-mock-o";
-        final String className = "org.gabsocial.ofactory.impl.MockPropertiedOFactoryChildImpl";
+        final String className = "com.gabstudios.manager.impl.MockPropertiedManagerChildImpl";
         
         try
         {
-            this._propertiedOFactory.create(key, className);
+            this._propertiedManager.create(key, className);
             
-            final OFactoryChild child = this._propertiedOFactory.get(key);
+            final Manageable child = this._propertiedManager.get(key);
             Assert.assertTrue(child != null);
             Assert.assertTrue(child.getKey().equals(key));
-            Assert.assertTrue(child instanceof MockPropertiedOFactoryChildImpl);
+            Assert.assertTrue(child instanceof MockPropertiedManagerChildImpl);
         }
-        catch (final OFactoryChildException e)
+        catch (final ManageableException e)
         {
             Assert.fail(e.toString());
         }

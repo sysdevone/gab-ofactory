@@ -17,22 +17,22 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
-import org.gabsocial.gabdev.validate.Validate;
-import org.gabsocial.ofactory.OFactory;
-import org.gabsocial.ofactory.OFactoryChild;
-import org.gabsocial.ofactory.OFactoryClosedException;
+import com.gabstudios.validate.Validate;
+import com.gabstudios.manager.Manager;
+import com.gabstudios.manager.Manageable;
+import com.gabstudios.manager.ManagerClosedException;
 
 
 /**
  * 
  * A base implementation to extend from when creating a child that is managed by
- * the <code>OFactory</code>.
+ * the <code>Manager</code>.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract class BaseOFactoryChild implements OFactoryChild
+public abstract class BaseManageable implements Manageable
 {
     // P = parent
     // C = child
@@ -50,22 +50,22 @@ public abstract class BaseOFactoryChild implements OFactoryChild
     private String      _key;
     
     /**
-     * The parent factory.
+     * The parent manager.
      */
-    private OFactory<?> _parent;
+    private Manager<?> _parent;
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gabsocial.ofactory.O#close()
+     * @see org.gabsocial.manager.O#close()
      */
     @Override
     public void close()
     {
         if (this._isClosed)
         {
-            throw (new OFactoryClosedException(
-                    "This OFactoryChild has been closed and may not be used."));
+            throw (new ManagerClosedException(
+                    "This ManagerChild has been closed and may not be used."));
         }
         else
         {
@@ -74,22 +74,22 @@ public abstract class BaseOFactoryChild implements OFactoryChild
             this._parent.closeChild(this._key);
             this._parent = null;
             this._isClosed = true;
-            this._key = null;
+            //this._key = null;
         }
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gabsocial.ofactory.OFactoryChild#closeWithoutRemove()
+     * @see org.gabsocial.manager.ManagerChild#closeWithoutRemove()
      */
     @Override
     public void closeWithoutRemove()
     {
         if (this._isClosed)
         {
-            throw (new OFactoryClosedException(
-                    "This OFactoryChild has been closed and may not be used."));
+            throw (new ManagerClosedException(
+                    "This ManagerChild has been closed and may not be used."));
         }
         else
         {
@@ -99,7 +99,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
             // DO NOT CLOSE IT.
             this._parent = null;
             this._isClosed = true;
-            this._key = null;
+            //this._key = null;
             
         }
     }
@@ -115,7 +115,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
         if (this == obj) { return true; }
         if (obj == null) { return false; }
         if (this.getClass() != obj.getClass()) { return false; }
-        final BaseOFactoryChild other = (BaseOFactoryChild) obj;
+        final BaseManageable other = (BaseManageable) obj;
         if (this._key == null)
         {
             if (other._key != null) { return false; }
@@ -127,35 +127,35 @@ public abstract class BaseOFactoryChild implements OFactoryChild
     /*
      * (non-Javadoc)
      * 
-     * @see org.gabsocial.ofactory.OFactoryChild#getKey()
+     * @see org.gabsocial.manager.ManagerChild#getKey()
      */
     @Override
     public String getKey()
     {
-        if (this._isClosed)
-        {
-            throw (new OFactoryClosedException(
-                    "This OFactoryChild has been closed and may not be used."));
-        }
-        else
-        {
+//        if (this._isClosed)
+//        {
+//            throw (new ManagerClosedException(
+//                    "This ManagerChild has been closed and may not be used."));
+//        }
+//        else
+//        {
             assert( this._key != null ) : "getKey(): the key is null.";
             return (this._key);
-        }
+//        }
     }
     
     /*
      * (non-Javadoc)
      * 
-     * @see org.gabsocial.ofactory.OFactoryChild#getParent()
+     * @see org.gabsocial.manager.ManagerChild#getParent()
      */
     @Override
-    public <P extends OFactory> P getParent()
+    public <P extends Manager> P getParent()
     {
         if (this._isClosed)
         {
-            throw (new OFactoryClosedException(
-                    "This OFactoryChild has been closed and may not be used."));
+            throw (new ManagerClosedException(
+                    "This ManagerChild has been closed and may not be used."));
         }
         else
         {
@@ -183,14 +183,14 @@ public abstract class BaseOFactoryChild implements OFactoryChild
      * (non-Javadoc)
      * 
      * @see
-     * org.gabsocial.ofactory.OFactoryChild#initialize(org.gabsocial.ofactory
-     * .OFactory, java.lang.String)
+     * org.gabsocial.manager.ManagerChild#initialize(org.gabsocial.manager
+     * .Manager, java.lang.String)
      */
     @Override
-    public <P extends OFactory> void initialize(final P parent, final String key)
+    public <P extends Manager> void initialize(final P parent, final String key)
     {
-        Validate.isNotNull(this.getClass(), parent);
-        Validate.isNotNullOrEmpty(this.getClass(), key);
+    	Validate.defineObject(parent).testNotNull().throwValidationExceptionOnFail().validate();
+    	Validate.defineString(key).testNotNullEmpty().throwValidationExceptionOnFail().validate();
         
         this._parent = parent;
         this._key = key;
@@ -206,7 +206,7 @@ public abstract class BaseOFactoryChild implements OFactoryChild
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("BaseOFactoryChild [_isClosed=");
+        builder.append("BaseManagerChild [_isClosed=");
         builder.append(this._isClosed);
         builder.append(", _key=");
         builder.append(this._key);

@@ -17,22 +17,22 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
-import org.gabsocial.gabdev.validate.Validate;
-import org.gabsocial.ofactory.PropertiedOFactory;
-import org.gabsocial.ofactory.PropertiedOFactoryChild;
+import com.gabstudios.validate.Validate;
+import com.gabstudios.manager.PropertiedManager;
+import com.gabstudios.manager.PropertiedManageable;
 
 
 /**
  * 
  * A base implementation to extend from when creating a child that is managed by
- * the <code>PropertiedOFactory</code>.
+ * the <code>PropertiedManager</code>.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract class BasePropertiedOFactoryChild extends
-        BaseOFactoryChild implements PropertiedOFactoryChild
+public abstract class BasePropertiedManageable extends
+        BaseManageable implements PropertiedManageable
 {
     /*
      * The settings used to initialize this class.
@@ -43,15 +43,15 @@ public abstract class BasePropertiedOFactoryChild extends
      * (non-Javadoc)
      * 
      * @see
-     * org.gabsocial.ofactory.OFactoryChild#initialize(org.gabsocial.ofactory
-     * .OFactory, java.lang.String)
+     * org.gabsocial.manager.ManagerChild#initialize(org.gabsocial.manager
+     * .Manager, java.lang.String)
      */
-    public <P extends PropertiedOFactory, S> void initialize(final P parent,
+    public <P extends PropertiedManager, S> void initialize(final P parent,
             final String key, S settings)
     {
-        Validate.isNotNull(this.getClass(), parent);
-        Validate.isNotNullOrEmpty(this.getClass(), key);
-        Validate.isNotNull(this.getClass(), settings);
+    	Validate.defineObject(parent).testNotNull().throwValidationExceptionOnFail().validate();
+    	Validate.defineString(key).testNotNullEmpty().throwValidationExceptionOnFail().validate();
+    	Validate.defineObject(settings).testNotNull().throwValidationExceptionOnFail().validate();
         
         super.initialize(parent, key);
         this._settings = settings;
@@ -60,7 +60,7 @@ public abstract class BasePropertiedOFactoryChild extends
     /*
      * (non-Javadoc)
      * 
-     * @see org.gabsocial.ofactory.PropertiedOFactoryChild#getSettings()
+     * @see org.gabsocial.manager.PropertiedManagerChild#getSettings()
      */
     public <S> S getSettings()
     {
@@ -75,7 +75,7 @@ public abstract class BasePropertiedOFactoryChild extends
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("BasePropertiedOFactoryChildImpl [toString()=");
+        builder.append("BasePropertiedManagerChildImpl [toString()=");
         builder.append(super.toString());
         builder.append(", _settings=");
         builder.append(this._settings);

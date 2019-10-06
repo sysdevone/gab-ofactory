@@ -17,39 +17,39 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
-import org.gabsocial.gabdev.validate.Validate;
+import com.gabstudios.validate.Validate;
 
 
 
 /**
  * <pre>
- * This class is a factory creating and handling of child objects that have settings.
+ * This class is a manager creating and handling of child objects that have settings.
  * 
- * Before an child can be created and used, the factory needs to be
- * instantiated. It is up to the caller to determine if the factory is a 
+ * Before an child can be created and used, the manager needs to be
+ * instantiated. It is up to the caller to determine if the manager is a 
  * singleton for implementation purposes.
  * 
- * After the factory is created and in memory, call the create(xxx) method to
+ * After the manager is created and in memory, call the create(xxx) method to
  * create and add children.
  * 
- * Once a child is created, a call to the factory's getChild(key) method will
+ * Once a child is created, a call to the manager's getChild(key) method will
  * return the child instance associated with the key. Only once child can be
  * associated with a specific key.
  * 
- * A child will be maintained by the factory until that child is removed by
- * calling the factory's removeChild(key) method or the child's close() method.
+ * A child will be maintained by the manager until that child is removed by
+ * calling the manager's removeChild(key) method or the child's close() method.
  * 
- * The factory's close() method will remove all children and prevent calls to
- * other factory methods. Call getInstance() to create a new instance of
- * OFactory so that child objects can be created and added.
+ * The manager's close() method will remove all children and prevent calls to
+ * other manager methods. Call getInstance() to create a new instance of
+ * Manager so that child objects can be created and added.
  * </pre>
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
-        OFactory<C>
+public class PropertiedManager<C extends PropertiedManageable, S> extends
+        Manager<C>
 {
     // P = parent
     // C = child
@@ -65,13 +65,13 @@ public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
      *            An object that holds data used to initialize the child after
      *            it is created.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final Class<C> clazz, final S settings)
-            throws OFactoryChildException
+            throws ManageableException
     {
         return (this.create(clazz.getName(), clazz.getName(), settings));
     }
@@ -87,13 +87,13 @@ public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
      *            An object that holds data used to initialize the child after
      *            it is created.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final String key, final Class<C> clazz, final S settings)
-            throws OFactoryChildException
+            throws ManageableException
     {
         return (this.create(key, clazz.getName(), settings));
     }
@@ -106,13 +106,13 @@ public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
      * @param settings
      *            An object that holds data used to initialize the child after
      *            it is created.
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final String className, final S settings)
-            throws OFactoryChildException
+            throws ManageableException
     {
         return (this.create(className, className, settings));
     }
@@ -129,25 +129,22 @@ public class PropertiedOFactory<C extends PropertiedOFactoryChild, S> extends
      * @param settings
      *            An object that holds data used to initialize the child after
      *            it is created.
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final String key, final String className, final S settings)
-            throws OFactoryChildException
+            throws ManageableException
     {
-        Validate.isNotNullOrEmpty(this.getClass(), key);
-        Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
-        Validate.isNotNullOrEmpty(this.getClass(), className);
-        Validate.isLessThanMaxLength(this.getClass(), CLASS_NAME_MAX_LENGTH,
-                className);
-        Validate.isNotNull(this.getClass(), settings);
+    	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
+    	Validate.defineString(className).testNotNullEmpty().testMaxLength(CLASS_NAME_MAX_LENGTH).throwValidationExceptionOnFail().validate();
+    	Validate.defineObject(settings).testNotNull().throwValidationExceptionOnFail().validate();
         
         // other methods do parameter validation.
-        final C child = this.loadAndStoreOFactoryChild(key, className);
+        final C child = this.loadAndStoreManagerChild(key, className);
         child.initialize(this, key, settings);
-        this.notifyObservers(new Event(Event.Type.CREATE, key, child));
+//        this.notifyObservers(new Event(Event.Type.CREATE, key, child));
         return child;
     }
     

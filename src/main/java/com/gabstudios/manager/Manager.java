@@ -1,6 +1,6 @@
 /*****************************************************************************************
  * 
- * Copyright 2014 Gregory Brown. All Rights Reserved.
+ * Copyright 2019 Gregory Brown. All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,50 +17,51 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
-import org.gabsocial.gabdev.validate.Validate;
+import com.gabstudios.validate.Validate;
 
 
 /**
  * <pre>
- * This class is an observable factory for creating and handling of child objects.
+ * This class is a manager for creating and handling of child objects.
  * 
- * Before an child can be created and used, the factory needs to be
- * instantiated.   It is up to the caller to determine if the factory is a 
+ * Before an child can be created and used, the manager needs to be
+ * instantiated.   It is up to the caller to determine if the manager is a 
  * singleton for implementation purposes.
  * 
- * After the factory is created and in memory,  add an observer to the OFactory using 
+ * After the manager is created and in memory,  add an observer to the Manager using 
  * the addObserver(Observer) or remove using removeObserver(Observer).
  * 
  * Call the create(xxx) method to create and add children and notify observers with a 
  * CREATE type event.
  * 
- * Once a child is created, a call to the factory's getChild(key) method will
+ * Once a child is created, a call to the manager's getChild(key) method will
  * return the child instance associated with the key. Only one child can be
  * associated with a specific key.  Calling the getChild(key) will notify observers 
  * with a GET type event.
  * 
- * A child will be maintained by the factory until that child is removed by
- * calling the factory's removeChild(key) method or the child's close() method.  
+ * A child will be maintained by the manager until that child is removed by
+ * calling the manager's removeChild(key) method or the child's close() method.  
  * Calling the removeChild(key) or the child's close() will notify observers with a 
- * REMOVE type event that the child was removed from the OFactory.
+ * REMOVE type event that the child was removed from the Manager.
  * 
- * The factory's close() method will remove all children and all observers and prevent calls to
- * other factory methods. Calling the close() method will notify all observers with a CLOSE type 
- * event before the OFactory removes the observers.
+ * The manager's close() method will remove all children and all observers and prevent calls to
+ * other manager methods. Calling the close() method will notify all observers with a CLOSE type 
+ * event before the Manager removes the observers.
  * 
  * </pre>
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactory<C extends OFactoryChild> extends Observable
+public class Manager<C extends Manageable>
 {
     /**
      * The maximum length a key can be.
@@ -77,8 +78,8 @@ public class OFactory<C extends OFactoryChild> extends Observable
     // S = settings
     
     /**
-     * OFactory Event that is sent to Observers when an child is created,
-     * removed, get or when the OFactory is closed.
+     * Manager Event that is sent to Observers when an child is created,
+     * removed, get or when the Manager is closed.
      * 
      * 
      * @author Gregory Brown (sysdevone)
@@ -113,7 +114,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
          */
         public Event(final Event.Type eventType)
         {
-            Validate.isNotNull(this.getClass(), eventType);
+        	Validate.defineObject(eventType).testNotNull().throwValidationExceptionOnFail().validate();
             
             this._eventType = eventType;
         }
@@ -127,17 +128,15 @@ public class OFactory<C extends OFactoryChild> extends Observable
          *            A <code>String</code> instance that is the key bound to
          *            the child instance.
          * @param child
-         *            An instance that implements the <code>OFactoryChild</code>
+         *            An instance that implements the <code>ManagerChild</code>
          *            interface.
          */
         public Event(final Event.Type eventType, final String key, final C child)
         {
             this(eventType);
             
-            Validate.isNotNullOrEmpty(this.getClass(), key);
-            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
-            
-            Validate.isNotNull(this.getClass(), child);
+        	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
+        	Validate.defineObject(child).testNotNull().throwValidationExceptionOnFail().validate();
             
             this._key = key;
             this._child = child;
@@ -146,7 +145,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
         /**
          * Returns the child
          * 
-         * @return An instance that implements the <code>OFactoryChild</code>
+         * @return An instance that implements the <code>ManagerChild</code>
          *         interface.
          */
         public C getChild()
@@ -197,90 +196,111 @@ public class OFactory<C extends OFactoryChild> extends Observable
     }
     
     /**
-     * Loads an OFactoryChild using the classname to get a new instances.
+     * Loads an ManagerChild using the classname to get a new instances.
      * 
      * @param className
      *            A <code>String</code> value that is a fully qualified class
      *            name.
-     * @return A subclass of <code>OFactoryChild</code>
+     * @return A subclass of <code>ManagerChild</code>
      * 
      * @param <C>
-     *            A type that extends <code>OFactoryChild</code>.
+     *            A type that extends <code>ManagerChild</code>.
      */
     @SuppressWarnings("unchecked")
-    protected final static <C extends OFactoryChild> C loadOFactoryChild(
+    protected final static <C extends Manageable> C loadManageable(
             final String className)
     {
-        assert (className != null) : "loadOFactoryChild() - the parameter 'className' should not be null or empty";
+        assert (className != null) : "loadManagerChild() - the parameter 'className' should not be null or empty";
         
         C child;
         try
         {
-            child = (C) Class.forName(className).newInstance();
+        	child = (C) Class.forName(className).getDeclaredConstructor().newInstance();
         }
         catch (final IllegalAccessException e)
         {
-            throw (new OFactorySysException("Illegal access to class name - "
+            throw (new ManagerSysException("Illegal access to class name - "
                     + className, e));
         }
         catch (final ClassNotFoundException e)
         {
-            throw (new OFactorySysException(
+            throw (new ManagerSysException(
                     "Unable to locate the class name - " + className, e));
         }
         catch (final InstantiationException e)
         {
-            throw (new OFactorySysException(
+            throw (new ManagerSysException(
                     "Unable to instantiate the class name - " + className, e));
         }
+		catch (IllegalArgumentException e)
+		{
+            throw (new ManagerSysException(
+                    "Unable to instantiate the class name due to illegal argument - " + className, e));
+		}
+		catch (InvocationTargetException e)
+		{
+            throw (new ManagerSysException(
+                    "Unable to instantiate the class name - " + className, e));
+		}
+		catch (NoSuchMethodException e)
+		{
+            throw (new ManagerSysException(
+                    "Unable to instantiate the class name - " + className, e));
+		}
+		catch (SecurityException e)
+		{
+            throw (new ManagerSysException(
+                    "Unable to instantiate the class name due to security - " + className, e));
+		}
         return (child);
     }
     
     /**
-     * A table of children created by this factory.
+     * A table of children created by this manager.
      */
     private final Map<String, C> _children;
     
     /**
-     * A flag to determine if the factory has been closed.
+     * A flag to determine if the manager has been closed.
      */
     private boolean              _isClosed;
     
     /*
      * initializes the children table.
      */
-    public OFactory()
+    public Manager()
     {
         this._children = new HashMap<String, C>();
         this._isClosed = false;
     }
     
-    /**
-     * Add an observer to the OFactory. The observer will be notified of events.
-     * 
-     * @param observer
-     *            An <code>Observer</code> instance that wants to be notified of
-     *            events.
-     */
-    public synchronized void addObserver(final Observer observer)
-    {
-        Validate.isNotNull(this.getClass(), observer);
-        
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            super.addObserver(observer);
-        }
-    }
+//    /**
+//     * Add an observer to the Manager. The observer will be notified of events.
+//     * 
+//     * @param observer
+//     *            An <code>Observer</code> instance that wants to be notified of
+//     *            events.
+//     */
+//    public synchronized void addObserver(final Observer observer)
+//    {
+//    	
+//    	Validate.defineObject(observer).testNotNull().throwValidationExceptionOnFail().validate();
+//        
+//        if (this.isClosed())
+//        {
+//            throw (new ManagerClosedException(
+//                    "This manager is closed and unable to process calls."));
+//        }
+////        else
+////        {
+////            super.addObserver(observer);
+////        }
+//    }
     
     /**
-     * A method that adds to the OFactory child table.
+     * A method that adds to the Manager child table.
      * 
-     * Other classes that extend OFactory can override this method for unique
+     * Other classes that extend Manager can override this method for unique
      * behavior.
      * 
      * @param key
@@ -288,7 +308,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            used for lookups.
      * 
      * @param child
-     *            A <code>OFactoryChild</code> instance that will be added to
+     *            A <code>ManagerChild</code> instance that will be added to
      *            the cache.
      * 
      * @return Returns the child that was added to the table.
@@ -302,20 +322,20 @@ public class OFactory<C extends OFactoryChild> extends Observable
     }
     
     /**
-     * Closes the factory, and removes then closes the children. Once closed,
+     * Closes the manager, and removes then closes the children. Once closed,
      * calls to methods on the child should return a
-     * <code>OFactoryClosedException</code> exception. This method calls the
-     * OFactory.closeChild(key) method.
+     * <code>ManagerClosedException</code> exception. This method calls the
+     * Manager.closeChild(key) method.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public void close()
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "The OFactory has been closed and may not be used."));
+            throw (new ManagerClosedException(
+                    "The Manager has been closed and may not be used."));
         }
         else
         {
@@ -330,9 +350,9 @@ public class OFactory<C extends OFactoryChild> extends Observable
             
             this._isClosed = true;
             
-            this.notifyObservers(new Event<C>(Event.Type.CLOSE));
-            this.deleteObservers();
-            assert (this.countObservers() == 0) : "The observable table should be empty.";
+//            this.notifyObservers(new Event<C>(Event.Type.CLOSE));
+//            this.deleteObservers();
+//            assert (this.countObservers() == 0) : "The observable table should be empty.";
         }
     }
     
@@ -345,55 +365,53 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * @return Returns the child that was found and closed. If the key is not
      *         associated with child then null is returned.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public C closeChild(final String key)
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
-            Validate.isNotNullOrEmpty(this.getClass(), key);
-            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+        	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
             
             @SuppressWarnings("unchecked")
             final C child = (C) this._children.remove(key);
             if (child != null)
             {
                 child.closeWithoutRemove();
-                assert (!this._children.containsKey(child.getKey())) : "The children table still contains the factory child when the factory child was closed.";
+                assert (!this._children.containsKey(child.getKey())) : "The children table still contains the manager child when the manager child was closed.";
             }
-            this.notifyObservers(new Event<C>(Event.Type.REMOVE, key, child));
+//            this.notifyObservers(new Event<C>(Event.Type.REMOVE, key, child));
             return (child);
         }
     }
     
     /**
      * Returns a <code>boolean</code> value (true or false) if a key is
-     * associated with a <code>OFactoryChild</code>.
+     * associated with a <code>ManagerChild</code>.
      * 
      * @param key
      *            A <code>String</code> instance that is a key.
      * @return A <code>boolean</code> value (true or false).
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public boolean containsChild(final String key)
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
-            Validate.isNotNullOrEmpty(this.getClass(), key);
-            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+        	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
             
             return (this._children.containsKey(key));
         }
@@ -406,14 +424,14 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            The class type to create a child from. Uses the Classes fully
      *            qualified name as the key.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
-    public C create(final Class<C> clazz) throws OFactoryChildException
+    public C create(final Class<C> clazz) throws ManageableException
     {
         return (this.create(clazz.getName(), clazz.getName()));
     }
@@ -426,14 +444,14 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            The fully qualified classname to create a child from. The
      *            fully qualified classname is the key.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
-    public C create(final String className) throws OFactoryChildException
+    public C create(final String className) throws ManageableException
     {
         return (this.create(className, className));
     }
@@ -446,15 +464,15 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * @param clazz
      *            The class type to create a child from.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final String key, final Class<C> clazz)
-            throws OFactoryChildException
+            throws ManageableException
     {
         return (this.create(key, clazz.getName()));
     }
@@ -470,25 +488,22 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            A <code>String</code> instance of the fully qualified
      *            classname.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
     public C create(final String key, final String className)
-            throws OFactoryChildException
+            throws ManageableException
     {
-        Validate.isNotNullOrEmpty(this.getClass(), key);
-        Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
-        Validate.isNotNullOrEmpty(this.getClass(), className);
-        Validate.isLessThanMaxLength(this.getClass(), CLASS_NAME_MAX_LENGTH,
-                className);
+    	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
+    	Validate.defineString(className).testNotNullEmpty().testMaxLength(CLASS_NAME_MAX_LENGTH).throwValidationExceptionOnFail().validate();
         
-        final C child = this.loadAndStoreOFactoryChild(key, className);
+        final C child = this.loadAndStoreManagerChild(key, className);
         child.initialize(this, key);
-        this.notifyObservers(new Event<C>(Event.Type.CREATE, key, child));
+//        this.notifyObservers(new Event<C>(Event.Type.CREATE, key, child));
         return child;
     }
     
@@ -498,48 +513,47 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * @param key
      *            The key that is bound to the logger.
      * 
-     * @return An <code>OFactoryChild</code> child instance associated with the
+     * @return An <code>ManagerChild</code> child instance associated with the
      *         key. May return null.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public C get(final String key)
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
-            Validate.isNotNullOrEmpty(this.getClass(), key);
-            Validate.isLessThanMaxLength(this.getClass(), KEY_MAX_LENGTH, key);
+        	Validate.defineString(key).testNotNullEmpty().testMaxLength(KEY_MAX_LENGTH).throwValidationExceptionOnFail().validate();
             // TODO - can make max length check based on the max length of a registered key.
             
             @SuppressWarnings("unchecked")
             final C child = (C) this._children.get(key);
-            this.notifyObservers(new Event<C>(Event.Type.GET, key, child));
+//            this.notifyObservers(new Event<C>(Event.Type.GET, key, child));
             return (child);
             
         }
     }
     
     /**
-     * Returns the number of children created and managed by this Factory.
+     * Returns the number of children created and managed by this Manager.
      * 
      * @return An integer value such that 0 &lt;= x &lt;= n is the number of
      *         children.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public int getChildCount()
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
@@ -552,15 +566,15 @@ public class OFactory<C extends OFactoryChild> extends Observable
      * 
      * @return A <code>Set</code> containing <code>String</code> keys.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
      */
     public Set<String> getKeys()
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
@@ -571,30 +585,30 @@ public class OFactory<C extends OFactoryChild> extends Observable
         }
     }
     
-    /**
-     * Get the current number of observers wanting to be notified of events.
-     * 
-     * @return An <code>int</code> value 0 &lt;= x &lt;= n.
-     */
-    public int getObserverCount()
-    {
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            final int count = this.countObservers();
-            return (count);
-        }
-    }
+//    /**
+//     * Get the current number of observers wanting to be notified of events.
+//     * 
+//     * @return An <code>int</code> value 0 &lt;= x &lt;= n.
+//     */
+//    public int getObserverCount()
+//    {
+//        if (this.isClosed())
+//        {
+//            throw (new ManagerClosedException(
+//                    "This manager is closed and unable to process calls."));
+//        }
+//        else
+//        {
+//            final int count = this.countObservers();
+//            return (count);
+//        }
+//    }
     
     /**
-     * Returns a boolean (true or false) if this <code>OFactory</code> is
+     * Returns a boolean (true or false) if this <code>Manager</code> is
      * closed.
      * 
-     * @return A <code>boolean</code> value. True if the factory is closed,
+     * @return A <code>boolean</code> value. True if the manager is closed,
      *         otherwise it is false.
      */
     public boolean isClosed()
@@ -603,7 +617,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
     }
     
     /**
-     * Loads and Stores the OFactoryChild for use.
+     * Loads and Stores the ManagerChild for use.
      * 
      * @param key
      *            A <code>String</code> instance. The key to bind to the new
@@ -613,82 +627,82 @@ public class OFactory<C extends OFactoryChild> extends Observable
      *            A <code>String</code> instance of the fully qualified
      *            classname.
      * 
-     * @return A <code>OFactoryChild</code> instance bound to the key.
+     * @return A <code>ManagerChild</code> instance bound to the key.
      * 
-     * @throws OFactoryClosedException
-     *             if this method is called and the OFactory is closed.
-     * @throws OFactoryChildException
-     *             Thrown when an OFactoryChild already exists with that key.
+     * @throws ManagerClosedException
+     *             if this method is called and the Manager is closed.
+     * @throws ManageableException
+     *             Thrown when an ManagerChild already exists with that key.
      */
-    protected final C loadAndStoreOFactoryChild(final String key,
-            final String className) throws OFactoryChildException
+    protected final C loadAndStoreManagerChild(final String key,
+            final String className) throws ManageableException
     {
         if (this.isClosed())
         {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
+            throw (new ManagerClosedException(
+                    "This manager is closed and unable to process calls."));
         }
         else
         {
             
-            assert (key != null && key.length() != 0) : "loadAndStoreOFactoryChild() - the parameter 'key' should not be null or empty";
-            assert (className != null && className.length() != 0) : "loadAndStoreOFactoryChild() - the parameter 'className' should not be null or empty";
+            assert (key != null && key.length() != 0) : "loadAndStoreManagerChild() - the parameter 'key' should not be null or empty";
+            assert (className != null && className.length() != 0) : "loadAndStoreManagerChild() - the parameter 'className' should not be null or empty";
             
             if (this.containsChild(key))
             {
-                throw (new OFactoryChildException(
-                        "A OFactoryChild already exists with that key='" + key
+                throw (new ManageableException(
+                        "A ManagerChild already exists with that key='" + key
                                 + "'"));
             }
             else
             {
-                C child = OFactory.loadOFactoryChild(className);
+                C child = Manager.loadManageable(className);
                 child = this.addToChildTable(key, child);
                 return (child);
             }
         }
     }
     
-    /**
-     * Notifies the <code>Observers</code> of an event within the OFactory.
-     * 
-     * @param event
-     *            An <code>OFactory</code> event that indicates a CREATE,
-     *            REMOVE, GET, CLOSE;
-     */
-    protected void notifyObservers(final Event<C> event)
-    {
-        assert (event != null) : "notifyObservers() - The parameter 'event' must not be null.";
-        this.setChanged();
-        if (this.countObservers() > 0)
-        {
-            super.notifyObservers(event);
-        }
-        this.clearChanged();
-    }
+//    /**
+//     * Notifies the <code>Observers</code> of an event within the Manager.
+//     * 
+//     * @param event
+//     *            An <code>Manager</code> event that indicates a CREATE,
+//     *            REMOVE, GET, CLOSE;
+//     */
+//    protected void notifyObservers(final Event<C> event)
+//    {
+//        assert (event != null) : "notifyObservers() - The parameter 'event' must not be null.";
+//        this.setChanged();
+//        if (this.countObservers() > 0)
+//        {
+//            super.notifyObservers(event);
+//        }
+//        this.clearChanged();
+//    }
     
-    /**
-     * Remove an observer from the OFactory. The observer will no longer be
-     * notified of events.
-     * 
-     * @param observer
-     *            An <code>Observer</code> instance that wants to be removed
-     *            from being notified of events.
-     */
-    public void removeObserver(final Observer observer)
-    {
-        if (this.isClosed())
-        {
-            throw (new OFactoryClosedException(
-                    "This factory is closed and unable to process calls."));
-        }
-        else
-        {
-            Validate.isNotNull(this.getClass(), observer);
-            
-            this.deleteObserver(observer);
-        }
-    }
+//    /**
+//     * Remove an observer from the Manager. The observer will no longer be
+//     * notified of events.
+//     * 
+//     * @param observer
+//     *            An <code>Observer</code> instance that wants to be removed
+//     *            from being notified of events.
+//     */
+//    public void removeObserver(final Observer observer)
+//    {
+//        if (this.isClosed())
+//        {
+//            throw (new ManagerClosedException(
+//                    "This manager is closed and unable to process calls."));
+//        }
+//        else
+//        {
+//        	Validate.defineObject(observer).testNotNull().throwValidationExceptionOnFail().validate();
+//            
+//            this.deleteObserver(observer);
+//        }
+//    }
     
     /*
      * (non-Javadoc)
@@ -699,7 +713,7 @@ public class OFactory<C extends OFactoryChild> extends Observable
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("OFactory [children=");
+        builder.append("Manager [children=");
         builder.append(this._children);
         builder.append(", isClosed=");
         builder.append(this._isClosed);

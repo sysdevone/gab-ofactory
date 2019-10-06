@@ -17,17 +17,17 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory.impl;
+package com.gabstudios.manager.impl;
 
-import org.gabsocial.ofactory.BaseOFactoryChild;
+import com.gabstudios.manager.BaseManageable;
 
 /**
  * 
- * A Mock object for testing the OFactory.
+ * A Mock object for testing the Manager.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class MockOFactoryChildImpl extends BaseOFactoryChild
+public class MockManagerChildImpl extends BaseManageable
 {
     // void for now.
 }

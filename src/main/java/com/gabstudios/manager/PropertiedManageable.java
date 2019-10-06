@@ -17,41 +17,41 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 /**
  * 
  * An interface to implement if an object is to be managed by the
- * <code>PropertiedOFactory</code>.
+ * <code>PropertiedManager</code>.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public abstract interface PropertiedOFactoryChild
-        extends OFactoryChild
+public abstract interface PropertiedManageable
+        extends Manageable
 {
     // P = parent
     // C = child
     // S = settings
     
     /**
-     * Initializes the PropertiedOFactoryChild with settings.
+     * Initializes the PropertiedManagerChild with settings.
      * 
      * @param parent
-     *            An <code>OFactory</code> instance that is the parent to this
+     *            An <code>Manager</code> instance that is the parent to this
      *            child. Must not be null.
      * 
      * @param key
      *            A <code>String</code> instance that is the key associated with
-     *            this child. OFactoryChild.getKey() should return this value.
+     *            this child. ManagerChild.getKey() should return this value.
      *            Must not be null.
      * 
      * @param settings
      *            An object that holds setting information. Must not be null.
      *            
-     * @param <P> A type that extends <code>PropertiedOFactory</code>.
+     * @param <P> A type that extends <code>PropertiedManager</code>.
      * @param <S> A type representing the settings passed into this instance.
      */
-    public abstract <P extends PropertiedOFactory, S> void initialize(final P parent, final String key,
+    public abstract <P extends PropertiedManager, S> void initialize(final P parent, final String key,
             final S settings);
     
     /**

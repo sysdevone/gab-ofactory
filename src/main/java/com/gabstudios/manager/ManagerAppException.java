@@ -17,7 +17,7 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 /**
  * 
@@ -27,7 +27,7 @@ package org.gabsocial.ofactory;
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactoryAppException extends Exception
+public class ManagerAppException extends Exception
 {
     
     /**
@@ -41,7 +41,7 @@ public class OFactoryAppException extends Exception
      * @param message
      *            A <code>String</code> message.
      */
-    public OFactoryAppException(final String message)
+    public ManagerAppException(final String message)
     {
         this(message, (Throwable) null);
     }
@@ -54,7 +54,7 @@ public class OFactoryAppException extends Exception
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactoryAppException(final String message, final Throwable throwable)
+    public ManagerAppException(final String message, final Throwable throwable)
     {
         super(message, null);
     }
@@ -65,7 +65,7 @@ public class OFactoryAppException extends Exception
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactoryAppException(final Throwable throwable)
+    public ManagerAppException(final Throwable throwable)
     {
         this(throwable.getMessage(), throwable);
     }

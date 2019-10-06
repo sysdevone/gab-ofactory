@@ -17,22 +17,22 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 /**
  * 
- * This exception is thrown when a method is called on either a closed OFactory
- * or OFactory's child.
+ * This type of exception is thrown when an invalid attempt is made on an
+ * Manageable instance.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactoryClosedException extends OFactorySysException
+public class ManageableException extends ManagerAppException
 {
     
     /**
      * Comment for <code>serialVersionUID</code>
      */
-    private static final long serialVersionUID = 467226162251095952L;
+    private static final long serialVersionUID = 5600940836027279939L;
     
     /**
      * Constructor with a message.
@@ -40,7 +40,7 @@ public class OFactoryClosedException extends OFactorySysException
      * @param message
      *            A <code>String</code> message.
      */
-    public OFactoryClosedException(final String message)
+    public ManageableException(final String message)
     {
         super(message);
     }
@@ -53,7 +53,7 @@ public class OFactoryClosedException extends OFactorySysException
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactoryClosedException(final String message,
+    public ManageableException(final String message,
             final Throwable throwable)
     {
         super(message, throwable);
@@ -65,7 +65,7 @@ public class OFactoryClosedException extends OFactorySysException
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactoryClosedException(final Throwable throwable)
+    public ManageableException(final Throwable throwable)
     {
         super(throwable);
     }

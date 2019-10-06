@@ -17,23 +17,22 @@
  ***************************************************************************************** 
  */
 
-package org.gabsocial.ofactory;
+package com.gabstudios.manager;
 
 /**
  * 
- * This type of exception is caused by a resource related error within the
- * system. This type of exception is considered non recoverable and an error,
- * but the caller may try to catch this type of exception to recover.
+ * This exception is thrown when a method is called on either a closed Manager
+ * or Manager's child.
  * 
  * @author Gregory Brown (sysdevone)
  */
-public class OFactorySysException extends RuntimeException
+public class ManagerClosedException extends ManagerSysException
 {
     
     /**
      * Comment for <code>serialVersionUID</code>
      */
-    private static final long serialVersionUID = -5649551798338539648L;
+    private static final long serialVersionUID = 467226162251095952L;
     
     /**
      * Constructor with a message.
@@ -41,9 +40,9 @@ public class OFactorySysException extends RuntimeException
      * @param message
      *            A <code>String</code> message.
      */
-    public OFactorySysException(final String message)
+    public ManagerClosedException(final String message)
     {
-        this(message, (Throwable) null);
+        super(message);
     }
     
     /**
@@ -54,9 +53,10 @@ public class OFactorySysException extends RuntimeException
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactorySysException(final String message, final Throwable throwable)
+    public ManagerClosedException(final String message,
+            final Throwable throwable)
     {
-        super(message, null);
+        super(message, throwable);
     }
     
     /**
@@ -65,9 +65,9 @@ public class OFactorySysException extends RuntimeException
      * @param throwable
      *            An instance of <code>Throwable</code>.
      */
-    public OFactorySysException(final Throwable throwable)
+    public ManagerClosedException(final Throwable throwable)
     {
-        this(throwable.getMessage(), throwable);
+        super(throwable);
     }
     
 }
